@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>FastSnip</title>
+    <script src="tailwindcss.min.js"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --breakpoint-sm: 480px;
+            --breakpoint-md: 768px;
+            --breakpoint-lg: 992px;
+            --breakpoint-xl: 1200px;
+            --breakpoint-2xl: 1400px;
+            --breakpoint-3xl: 1600px;
+        }
+    </style>
+    <style>
+        .container {
+            max-width: 100% !important;
+        }
+
+        @media (min-width: 1400px) {
+            .container {
+                max-width: 1400px !important;
+            }
+        }
+
+        *::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        *::-webkit-scrollbar-track {
+            background: #fff;
+        }
+
+        *::-webkit-scrollbar-thumb {
+            background-color: #c3c0c1;
+            border-radius: 10px;
+            border: 3px solid #fff;
+        }
+
+        /* Custom drag region for window */
+        .titlebar {
+            -webkit-app-region: drag;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .titlebar button {
+            -webkit-app-region: no-drag;
+        }
+
+        /* Add top padding to body to account for fixed titlebar */
+        body {
+            padding-top: 30px;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Make container fill remaining height */
+        .main-container {
+            height: calc(100vh - 30px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Make result div flexible and scrollable */
+        #result {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        /* Custom window control buttons */
+        .window-control {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .window-control:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .window-control.close:hover {
+            background-color: #ef4444;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Custom Titlebar -->
+    <div
+        class="titlebar bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 pl-2 pr-1 py-1 flex items-center justify-between">
+        <div class="flex items-end gap-2">
+            <div
+                class="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span class="text-white text-xs font-bold">F</span>
+            </div>
+            <span class="text-slate-700 font-semibold text-sm">FastSnip</span>
+            <span class="text-slate-400 text-[12px]">OCR Screen Capture</span>
+        </div>
+
+        <div class="flex items-center space-x-1">
+            <button onclick="window.electronAPI.minimizeWindow()"
+                class="window-control text-slate-600 hover:text-slate-800" title="Minimize">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-minus-icon lucide-minus">
+                    <path d="M5 12h14" />
+                </svg>
+            </button>
+            <button onclick="window.electronAPI.closeWindow()"
+                class="window-control close text-slate-600 hover:text-white" title="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-x-icon lucide-x">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <section class="container main-container p-4">
+        <div class="flex flex-col h-full space-y-4">
+            <div class="text-xs text-gray-500 text-center space-y-1 flex-shrink-0">
+                <div>⌨️ Global hotkey: <kbd class="bg-gray-200 px-1 rounded">Ctrl+Shift+T</kbd></div>
+                <div>💡 Right-click system tray icon to change settings</div>
+            </div>
+            <div id="result"
+                class="bg-white border border-slate-200 flex flex-row items-center justify-center rounded-[8px] p-2 text-sm">
+                <div class="text-center text-slate-400 text-xs">
+                    Press <kbd class="bg-slate-100 px-1 rounded">Ctrl+Shift+T</kbd> to capture text
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="tesseract.min.js"></script>
+    <script>
+        let currentLanguage = 'auto'; // Default language
+
+        // Get initial language setting
+        window.electronAPI.getLanguageSetting();
+
+        // Listen for language changes from tray menu
+        window.electronAPI.onLanguageChanged((event, language) => {
+            currentLanguage = language;
+        });
+
+        // Listen for initial language setting
+        window.electronAPI.onLanguageSetting((event, language) => {
+            currentLanguage = language;
+        });
+
+        // Handle OCR processing
+        window.electronAPI.onProcessOCR((event, imageData) => {
+            processOCR(imageData);
+        });
+
+        async function processOCR(imageData) {
+            const resultDiv = document.getElementById('result');
+
+            // Use current language setting from tray
+            let languages;
+            if (currentLanguage === 'auto') {
+                languages = 'eng+chi_tra+chi_sim+jpn+kor+fra+deu+spa+rus+ara';
+            } else {
+                languages = currentLanguage;
+            }
+
+            resultDiv.innerHTML = `<span class="text-[12px] text-slate-600">Processing OCR (${currentLanguage})...</span>`;
+
+            try {
+                const { data: { text } } = await Tesseract.recognize(
+                    imageData, // Use base64 data URL directly instead of file path
+                    languages,
+                    {
+                        logger: m => {
+                            if (m.status === 'recognizing text') {
+                                resultDiv.innerHTML = `<span class="text-[12px] text-slate-600">OCR Progress: ${Math.round(m.progress * 100)}%</span>`;
+                            }
+                        },
+                        // PSM (Page Segmentation Mode) options:
+                        // 3: Fully automatic page segmentation, but no OSD (default)
+                        // 6: Uniform block of text (good for documents)
+                        // 8: Single word
+                        // 13: Raw line. Treat the image as a single text line
+                        tessedit_pageseg_mode: '6',
+
+                        // OEM (OCR Engine Mode) options:
+                        // 0: Legacy engine only
+                        // 1: Neural nets LSTM engine only (best accuracy)
+                        // 2: Legacy + LSTM engines
+                        // 3: Default, based on what is available
+                        tessedit_ocr_engine_mode: '1',
+
+                        // Quality improvements
+                        tessedit_char_blacklist: '', // Allow all characters
+                        tessedit_do_invert: '0',
+                        tessedit_write_images: '0',
+                        user_defined_dpi: '300', // Higher DPI for better quality
+
+                        // Additional accuracy settings
+                        classify_bln_numeric_mode: '0',
+                        textord_really_old_xheight: '0',
+                        textord_min_xheight: '10'
+                    }
+                );
+
+                // Remove unnecessary spaces but keep English word spacing and line breaks
+                const cleanedText = removeUnnecessarySpaces(text);
+
+                resultDiv.innerHTML = `
+                <div class="w-full h-full flex flex-col">
+                    <div class="flex items-center justify-between mb-2 flex-shrink-0">
+                        <h2 class="text-start text-slate-600 text-[12px] font-semibold">Extracted Text (${currentLanguage})</h2>
+                        <button id="copyButton" class="bg-slate-100 stroke-slate-600 border border-slate-200 flex justify-center items-center rounded-[4px] px-2 py-[3px] duration-100 hover:border-slate-600 hover:bg-slate-200 text-[10px] font-medium">
+                            Copy
+                        </button>
+                    </div>
+                    <textarea readonly class="w-full text-[12px] bg-slate-100 text-slate-700 flex-1 border border-slate-200 resize-none outline-none rounded-[4px] p-2 duration-100 focus:border-slate-600 whitespace-pre-wrap min-h-0">${cleanedText || 'No text found'}</textarea>
+                </div>
+            `;
+
+                // Store the text data and add event listener to the copy button
+                const copyButton = document.getElementById('copyButton');
+                copyButton.textToCopy = cleanedText;
+                copyButton.addEventListener('click', function () {
+                    copyToClipboard(this.textToCopy, this);
+                });
+            } catch (error) {
+                resultDiv.innerHTML = `
+                <div class="text-center text-red-500 col-span-6 text-sm">
+                    ❌ OCR Error: ${error.message}
+                </div>
+            `;
+            }
+        }
+
+        function removeUnnecessarySpaces(text) {
+            if (!text) return '';
+
+            return text
+                // Split by line breaks to preserve them
+                .split('\n')
+                .map(line => {
+                    // For each line, remove spaces except between English letters/words
+                    return line.replace(/\s+/g, (match, offset, string) => {
+                        const before = string[offset - 1] || '';
+                        const after = string[offset + match.length] || '';
+
+                        // Keep space if both before and after are English letters/numbers
+                        if (/[A-Za-z0-9]/.test(before) && /[A-Za-z0-9]/.test(after)) {
+                            return ' '; // Single space for English words
+                        }
+                        // Keep space if one side is English and other is punctuation
+                        if ((/[A-Za-z0-9]/.test(before) && /[.,:;!?]/.test(after)) ||
+                            (/[.,:;!?]/.test(before) && /[A-Za-z0-9]/.test(after))) {
+                            return ' ';
+                        }
+                        // Remove all other spaces
+                        return '';
+                    });
+                })
+                .join('\n'); // Rejoin with line breaks
+        }
+
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                button.innerHTML = `Copied!`;
+                button.classList.add('bg-green-100', 'text-green-700', 'border-green-300');
+                button.classList.remove('bg-slate-100', 'border-slate-200');
+
+                setTimeout(() => {
+                    button.innerHTML = `Copy`;
+                    button.classList.remove('bg-green-100', 'text-green-700', 'border-green-300');
+                    button.classList.add('bg-slate-100', 'border-slate-200');
+                }, 2000);
+            });
+        }
+
+
+    </script>
+
+</body>
+
+</html> 
