@@ -1,12 +1,14 @@
 # FastSnip
 
+![FastSnip](screenshot.gif)
+
 A simple, free and open source OCR screen capture tool for Windows. It allows users to grab text from anywhere on the screen with a quick hotkey.
 
 [Download FastSnip](https://louisho5.github.io/fastsnip/)
 
 ## Why I built this
 
-I was looking for something like TextSniper (which is Mac-only) for Windows but couldn't find any good free alternatives. So I decided to build one myself for everyone who needs it.
+I was looking for something like TextSniper (which is Mac-only) for Windows but couldn't find any good alternatives. So I decided to build one myself for everyone who needs it.
 
 ## What it does
 
