@@ -30,7 +30,7 @@ app.on('ready', () => {
     registerGlobalShortcuts();
 	
     //load offline website
-    mainWindow.loadFile('./web/index.html');
+    mainWindow.loadFile('./ui/index.html');
 
 	ipcMain.on('start-capture', async (event) => {
 		await startScreenCapture();
@@ -121,7 +121,7 @@ async function startScreenCapture() {
 			const screenshot = sources[0].thumbnail.toDataURL();
 			
 			// Load capture interface and wait for it to be ready
-			await captureWindow.loadFile('./web/capture.html');
+			await captureWindow.loadFile('./ui/capture.html');
 			
 			// Wait a brief moment for the page to fully load
 			await new Promise(resolve => setTimeout(resolve, 100));
@@ -132,7 +132,7 @@ async function startScreenCapture() {
 			captureWindow.focus();
 		} else {
 			// If no screenshot available, just show the capture window
-			await captureWindow.loadFile('./web/capture.html');
+			await captureWindow.loadFile('./ui/capture.html');
 			captureWindow.show();
 			captureWindow.focus();
 		}
