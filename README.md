@@ -27,7 +27,7 @@ I was looking for something like TextSniper (which is Mac-only) for Windows but 
 3. Drag to select text area
 4. Copy the extracted text
 
-Right-click the system tray icon to change language settings.
+Right-click t
 
 ## Development
 
@@ -55,3 +55,20 @@ This project uses the following third-party libraries:
 **Tesseract.js**
 - License: Apache License 2.0
 - Source: https://github.com/naptha/tesseract.js
+
+he system tray icon to change language settings.
+
+
+## Changelog
+
+<details open>
+  <summary>Version 0.1.1</summary>
+
+  Added support for automatic clipboard copying
+</details>
+
+<details open>
+  <summary>Version 0.1.0</summary>
+
+  Initial release
+</details>

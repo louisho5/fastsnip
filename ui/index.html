@@ -150,9 +150,11 @@
     <script src="tesseract.min.js"></script>
     <script>
         let currentLanguage = 'auto'; // Default language
+        let autoCopyEnabled = true; // Default auto-copy setting
 
-        // Get initial language setting
+        // Get initial settings
         window.electronAPI.getLanguageSetting();
+        window.electronAPI.getAutoCopySetting();
 
         // Listen for language changes from tray menu
         window.electronAPI.onLanguageChanged((event, language) => {
@@ -162,6 +164,16 @@
         // Listen for initial language setting
         window.electronAPI.onLanguageSetting((event, language) => {
             currentLanguage = language;
+        });
+
+        // Listen for auto-copy changes from tray menu
+        window.electronAPI.onAutoCopyChanged((event, enabled) => {
+            autoCopyEnabled = enabled;
+        });
+
+        // Listen for initial auto-copy setting
+        window.electronAPI.onAutoCopySetting((event, enabled) => {
+            autoCopyEnabled = enabled;
         });
 
         // Handle OCR processing
@@ -223,16 +235,16 @@
                 const cleanedText = removeUnnecessarySpaces(text);
 
                 resultDiv.innerHTML = `
-                <div class="w-full h-full flex flex-col">
-                    <div class="flex items-center justify-between mb-2 flex-shrink-0">
-                        <h2 class="text-start text-slate-600 text-[12px] font-semibold">Extracted Text (${currentLanguage})</h2>
-                        <button id="copyButton" class="bg-slate-100 stroke-slate-600 border border-slate-200 flex justify-center items-center rounded-[4px] px-2 py-[3px] duration-100 hover:border-slate-600 hover:bg-slate-200 text-[10px] font-medium">
-                            Copy
-                        </button>
+                    <div class="w-full h-full flex flex-col">
+                        <div class="flex items-center justify-between mb-2 flex-shrink-0">
+                            <h2 class="text-start text-slate-600 text-[12px] font-semibold">Extracted Text (${currentLanguage})</h2>
+                            <button id="copyButton" class="bg-slate-100 stroke-slate-600 border border-slate-200 flex justify-center items-center rounded-[4px] px-2 py-[3px] duration-100 hover:border-slate-600 hover:bg-slate-200 text-[10px] font-medium">
+                                Copy
+                            </button>
+                        </div>
+                        <textarea readonly class="w-full text-[12px] bg-slate-100 text-slate-700 flex-1 border border-slate-200 resize-none outline-none rounded-[4px] p-2 duration-100 focus:border-slate-600 whitespace-pre-wrap min-h-0">${cleanedText || 'No text found'}</textarea>
                     </div>
-                    <textarea readonly class="w-full text-[12px] bg-slate-100 text-slate-700 flex-1 border border-slate-200 resize-none outline-none rounded-[4px] p-2 duration-100 focus:border-slate-600 whitespace-pre-wrap min-h-0">${cleanedText || 'No text found'}</textarea>
-                </div>
-            `;
+                `;
 
                 // Store the text data and add event listener to the copy button
                 const copyButton = document.getElementById('copyButton');
@@ -240,6 +252,21 @@
                 copyButton.addEventListener('click', function () {
                     copyToClipboard(this.textToCopy, this);
                 });
+
+                // Auto-copy if enabled
+                if (autoCopyEnabled && cleanedText) {
+                    window.electronAPI.autoCopyText(cleanedText);
+                    // Show visual feedback that text was auto-copied
+                    copyButton.innerHTML = `Auto-Copied!`;
+                    copyButton.classList.add('bg-blue-100', 'text-blue-700', 'border-blue-300');
+                    copyButton.classList.remove('bg-slate-100', 'border-slate-200');
+
+                    setTimeout(() => {
+                        copyButton.innerHTML = `Copy`;
+                        copyButton.classList.remove('bg-blue-100', 'text-blue-700', 'border-blue-300');
+                        copyButton.classList.add('bg-slate-100', 'border-slate-200');
+                    }, 2000);
+                }
             } catch (error) {
                 resultDiv.innerHTML = `
                 <div class="text-center text-red-500 col-span-6 text-sm">
@@ -296,4 +323,4 @@
 
 </body>
 
-</html> 
+</html>

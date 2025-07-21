@@ -10,6 +10,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getLanguageSetting: () => ipcRenderer.send('get-language-setting'),
     onLanguageChanged: (callback) => ipcRenderer.on('language-changed', callback),
     onLanguageSetting: (callback) => ipcRenderer.on('language-setting', callback),
+    getAutoCopySetting: () => ipcRenderer.send('get-autocopy-setting'),
+    onAutoCopyChanged: (callback) => ipcRenderer.on('autocopy-changed', callback),
+    onAutoCopySetting: (callback) => ipcRenderer.on('autocopy-setting', callback),
+    autoCopyText: (text) => ipcRenderer.send('auto-copy-text', text),
     removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),
     
     // Window control APIs

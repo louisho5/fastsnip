@@ -7,6 +7,7 @@ let captureWindow;
 let tray = null;
 let currentLanguage = 'auto'; // Default language setting
 let isCapturing = false; // Flag to prevent multiple captures
+let autoCopyEnabled = true; // Default auto-copy setting
 let options = {
     width: 340,
     height: 265,
@@ -50,6 +51,16 @@ app.on('ready', () => {
 
 	ipcMain.on('get-language-setting', (event) => {
 		event.reply('language-setting', currentLanguage);
+	});
+
+	ipcMain.on('get-autocopy-setting', (event) => {
+		event.reply('autocopy-setting', autoCopyEnabled);
+	});
+
+	ipcMain.on('auto-copy-text', (event, text) => {
+		if (autoCopyEnabled) {
+			clipboard.writeText(text);
+		}
 	});
 
 	// Window control handlers
@@ -362,6 +373,13 @@ function updateTrayMenu() {
 		},
 		{ type: 'separator' },
 		{
+			label: '📋 Auto Copy Text',
+			type: 'checkbox',
+			checked: autoCopyEnabled,
+			click: () => toggleAutoCopy()
+		},
+		{ type: 'separator' },
+		{
 			label: 'Show Main Window',
 			click: () => {
 				mainWindow.show();
@@ -410,6 +428,16 @@ function setLanguage(language) {
 	// Notify renderer of language change
 	if (mainWindow && mainWindow.webContents) {
 		mainWindow.webContents.send('language-changed', language);
+	}
+}
+
+function toggleAutoCopy() {
+	autoCopyEnabled = !autoCopyEnabled;
+	updateTrayMenu(); // Update checkbox state
+	
+	// Notify renderer of auto-copy setting change
+	if (mainWindow && mainWindow.webContents) {
+		mainWindow.webContents.send('autocopy-changed', autoCopyEnabled);
 	}
 }
 
