@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Screen Capture</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.4);
+            cursor: crosshair;
+            user-select: none;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #screenshot {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            opacity: 0.8;
+            pointer-events: none;
+            z-index: 1;
+            object-fit: cover;
+        }
+        
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: 2;
+        }
+        
+        .selection-box {
+            position: fixed;
+            border: 2px solid #8F31FB;
+            background: rgba(244, 172, 255, 0.1);
+            pointer-events: none;
+            z-index: 4;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);
+        }
+        
+        .instructions {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        📸 Click and drag to select area for OCR • ESC to cancel
+    </div>
+    
+    <img id="screenshot" />
+    <div id="overlay"></div>
+    
+    <script>
+        let isSelecting = false;
+        let startX, startY, endX, endY;
+        let selectionBox = null;
+        let screenshotLoaded = false;
+        
+        // Listen for screenshot data
+        window.electronAPI.onScreenshotReady((event, screenshotData) => {
+            const screenshotImg = document.getElementById('screenshot');
+            
+            // Clear any existing image first
+            screenshotImg.src = '';
+            
+            // Set new screenshot
+            screenshotImg.onload = () => {
+                screenshotLoaded = true;
+            };
+            
+            screenshotImg.onerror = () => {
+                console.error('Failed to load screenshot');
+                screenshotLoaded = false;
+            };
+            
+            screenshotImg.src = screenshotData;
+        });
+        
+        // Mouse events for selection
+        document.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return; // Only left mouse button
+            
+            isSelecting = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            // Remove existing selection box
+            if (selectionBox) {
+                selectionBox.remove();
+                selectionBox = null;
+            }
+            
+            // Create new selection box
+            selectionBox = document.createElement('div');
+            selectionBox.className = 'selection-box';
+            document.body.appendChild(selectionBox);
+            
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isSelecting || !selectionBox) return;
+            
+            endX = e.clientX;
+            endY = e.clientY;
+            
+            const left = Math.min(startX, endX);
+            const top = Math.min(startY, endY);
+            const width = Math.abs(endX - startX);
+            const height = Math.abs(endY - startY);
+            
+            selectionBox.style.left = left + 'px';
+            selectionBox.style.top = top + 'px';
+            selectionBox.style.width = width + 'px';
+            selectionBox.style.height = height + 'px';
+        });
+        
+        document.addEventListener('mouseup', (e) => {
+            if (!isSelecting || e.button !== 0) return;
+            
+            isSelecting = false;
+            endX = e.clientX;
+            endY = e.clientY;
+            
+            const left = Math.min(startX, endX);
+            const top = Math.min(startY, endY);
+            const width = Math.abs(endX - startX);
+            const height = Math.abs(endY - startY);
+            
+            // Only capture if selection is large enough
+            if (width > 10 && height > 10) {
+                window.electronAPI.captureArea({
+                    x: left,
+                    y: top,
+                    width: width,
+                    height: height
+                });
+            } else {
+                window.electronAPI.cancelCapture();
+            }
+        });
+        
+        // ESC to cancel
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.electronAPI.cancelCapture();
+            }
+        });
+        
+        // Prevent context menu and other interactions
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('selectstart', (e) => {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('dragstart', (e) => {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
