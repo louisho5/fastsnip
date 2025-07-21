@@ -62,7 +62,7 @@ he system tray icon to change language settings.
 ## Changelog
 
 <details open>
-  <summary>Version 0.1.1</summary>
+  <summary>Version 0.2.0</summary>
 
   Added support for automatic clipboard copying
 </details>
