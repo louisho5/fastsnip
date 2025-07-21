@@ -22,12 +22,9 @@ I was looking for something like TextSniper (which is Mac-only) for Windows but 
 
 ## How to use it
 
-1. Download and run `FastSnip.exe` 
+1. Download and run `fastsnip.exe` 
 2. Press `Ctrl+Shift+T` anywhere to capture
-3. Drag to select text area
-4. Copy the extracted text
-
-Right-click t
+3. Done! The text is copied to your clipboard
 
 ## Development
 
@@ -56,18 +53,15 @@ This project uses the following third-party libraries:
 - License: Apache License 2.0
 - Source: https://github.com/naptha/tesseract.js
 
-he system tray icon to change language settings.
-
-
 ## Changelog
 
-<details open>
+<details>
   <summary>Version 0.2.0</summary>
 
   Added support for automatic clipboard copying
 </details>
 
-<details open>
+<details>
   <summary>Version 0.1.0</summary>
 
   Initial release
