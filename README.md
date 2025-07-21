@@ -48,11 +48,8 @@ This project uses the following third-party libraries:
 
 **Electron**
 - License: MIT License
-- Copyright: GitHub Inc.
 - Source: https://github.com/electron/electron
 
 **Tesseract.js**
 - License: Apache License 2.0
-- Copyright: Tesseract.js contributors
 - Source: https://github.com/naptha/tesseract.js
-- License text: https://www.apache.org/licenses/LICENSE-2.0
