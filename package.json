@@ -10,7 +10,7 @@
   "main": "main.js",
   "scripts": {
     "dev": "npx electron ./",
-    "build": "npx electron-builder build --win portable"
+    "build": "npx electron-builder build"
   },
   "author": "@louisho5",
   "license": "MIT",
@@ -23,8 +23,26 @@
   },
   "build": {
     "artifactName": "fastsnip.exe",
+    "directories": {
+      "output": "dist"
+    },
+    "compression": "maximum",
+    "asar": true,
     "win": {
-      "icon": "favicon.ico"
-    }
+      "icon": "favicon.ico",
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "files": [
+      "**/*",
+      "!node_modules/**/*",
+      "node_modules/tesseract.js/**/*"
+    ]
   }
 }
