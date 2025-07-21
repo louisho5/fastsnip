@@ -2,7 +2,7 @@
 
 ![FastSnip](screenshot.gif) 
 
-![license](https://img.shields.io/badge/license-MIT-blue)  ![target](https://img.shields.io/badge/target-Windows-purple)  ![status](https://img.shields.io/badge/status-beta-orange)  [![website](https://img.shields.io/badge/website-online-green)](https://louisho5.github.io/fastsnip/)  [![download](https://img.shields.io/badge/free_download-grey)](https://louisho5.github.io/fastsnip/)
+![license](https://img.shields.io/badge/license-MIT-blue)  ![target](https://img.shields.io/badge/target-Windows-blue)  ![status](https://img.shields.io/badge/status-beta-green)  [![website](https://img.shields.io/badge/website-online-green)](https://louisho5.github.io/fastsnip/)  [![download](https://img.shields.io/badge/free_download-grey)](https://louisho5.github.io/fastsnip/)
 
 A simple, free and open source OCR screen capture tool for Windows. It allows users to grab text from anywhere on the screen with a quick hotkey.
 
