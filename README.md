@@ -10,7 +10,7 @@ A simple, free and open source OCR screen capture tool for Windows. It allows us
 
 ## Why I built this
 
-I was looking for something like TextSniper (which is Mac-only) for Windows but couldn't find any good alternatives. So I decided to build one myself for everyone who needs it.
+I was looking for something like TextSniper (which is Mac-only) for Windows but couldn't find any good alternatives. So I decided to build one for myself.
 
 ## What it does
 
