@@ -479,7 +479,7 @@ app.on('before-quit', () => {
 	// Unregister all global shortcuts
 	globalShortcut.unregisterAll();
 	
-	// Clean up tray icon before quitting
+	// Clean up tray icon before quitting app
 	if (tray) {
 		tray.destroy();
 		tray = null;
