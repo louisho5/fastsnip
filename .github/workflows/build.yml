@@ -1,0 +1,26 @@
+name: Build Win EXE
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-win:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps & build
+        run: |
+          npm ci
+          npm run dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastsnip.exe
+          path: dist/*.exe
