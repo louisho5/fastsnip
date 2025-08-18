@@ -10,7 +10,8 @@
   "main": "main.js",
   "scripts": {
     "dev": "npx electron ./",
-    "build": "npx electron-builder build"
+    "build": "npx electron-builder build",
+    "dist": "npx electron-builder --win --x64 --publish never"
   },
   "author": "@louisho5",
   "license": "MIT",
